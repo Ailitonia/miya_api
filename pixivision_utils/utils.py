@@ -46,7 +46,7 @@ async def fetch_text(url: str, paras: dict) -> str:
         return ''
 
 
-class Pixivsion(object):
+class Pixivision(object):
     def __init__(self):
         self.__root_url = 'https://www.pixivision.net'
         self.__illustration_url = 'https://www.pixivision.net/zh/c/illustration'
@@ -101,7 +101,7 @@ class Pixivsion(object):
                 image_url = item.find(name='img', attrs={'class': 'am__work__illust'}).attrs['src']
                 illusts_list.append({'illusts_id': pid, 'illusts_url': url, 'illusts_image': image_url})
             except Exception as e:
-                print(f'Pixivsion get_article_info WARNING: illusts_list class error: {e}')
+                print(f'Pixivision get_article_info WARNING: illusts_list class error: {e}')
                 continue
         __res['body']['article']['article_title'] = article_title
         __res['body']['article']['article_description'] = article_description
