@@ -37,32 +37,37 @@ async def fetch_json(url: str, paras: dict = None) -> dict:
 # 返回格式化后的作品信息
 async def get_illust_data(illust_id: [str, int]) -> dict:
     illust_url = illust_data_url + str(illust_id)
-    result = await fetch_json(url=illust_url)
-    if result.get('error'):
+    illust_result = await fetch_json(url=illust_url)
+    if illust_result.get('error') or not illust_result:
         logger.warning(f'{__name__}: Get_illust_data, failed to fetch illust info.')
         return {'error': True, 'body': {}}
+
+    illust_page_url = illust_url + '/pages'
+    illust_pages = await fetch_json(url=illust_page_url)
+
     try:
         # 处理作品基本信息
-        illustid = int(result['body']['illustId'])
-        illusttitle = str(result['body']['illustTitle'])
-        userid = int(result['body']['userId'])
-        username = str(result['body']['userName'])
+        illustid = int(illust_result['body']['illustId'])
+        illusttitle = str(illust_result['body']['illustTitle'])
+        userid = int(illust_result['body']['userId'])
+        username = str(illust_result['body']['userName'])
         url = illust_artwork_url + str(illust_id)
-        illust_orig_url = str(result['body']['urls']['original'])
-        illust_regular_url = str(result['body']['urls']['regular'])
-        illust_description = str(result['body']['description'])
+        illust_orig_url = str(illust_result['body']['urls']['original'])
+        illust_regular_url = str(illust_result['body']['urls']['regular'])
+        illust_description = str(illust_result['body']['description'])
         re_std_description_s1 = r'(\<br\>|\<br \/\>)'
         re_std_description_s2 = r'<[^>]+>'
         illust_description = re.sub(re_std_description_s1, '\n', illust_description)
         illust_description = re.sub(re_std_description_s2, '', illust_description)
+
         # 处理作品tag
         illusttag = []
-        tag_number = len(result['body']['tags']['tags'])
+        tag_number = len(illust_result['body']['tags']['tags'])
         for num in range(tag_number):
-            tag = str(result['body']['tags']['tags'][num]['tag'])
+            tag = str(illust_result['body']['tags']['tags'][num]['tag'])
             illusttag.append(tag)
             try:
-                transl_tag = str(result['body']['tags']['tags'][num]['translation']['en'])
+                transl_tag = str(illust_result['body']['tags']['tags'][num]['translation']['en'])
                 illusttag.append(transl_tag)
             except Exception as e:
                 logger.debug(f'{__name__}: Get_illust_data, tag not has translation, {repr(e)}, ignored')
@@ -71,8 +76,23 @@ async def get_illust_data(illust_id: [str, int]) -> dict:
             is_r18 = True
         else:
             is_r18 = False
+
+        # 处理图片列表
+        all_url = {
+            'thumb_mini': [],
+            'small': [],
+            'regular': [],
+            'original': [],
+        }
+        if not illust_pages.get('error') and illust_pages:
+            for item in illust_pages.get('body'):
+                all_url.get('thumb_mini').append(item['urls']['thumb_mini'])
+                all_url.get('small').append(item['urls']['small'])
+                all_url.get('regular').append(item['urls']['regular'])
+                all_url.get('original').append(item['urls']['original'])
+
         __resDict = {'pid': illustid, 'title': illusttitle, 'uid': userid, 'uname': username,
-                     'url': url, 'orig_url': illust_orig_url, 'regular_url': illust_regular_url,
+                     'url': url, 'orig_url': illust_orig_url, 'regular_url': illust_regular_url, 'all_url': all_url,
                      'description': illust_description, 'tags': illusttag, 'is_r18': is_r18}
         __res = {'error': False, 'body': __resDict}
     except Exception as e:
@@ -169,6 +189,6 @@ if __name__ == '__main__':
     # Testing
     import asyncio
     loop = asyncio.get_event_loop()
-    res = loop.run_until_complete(get_illust_data(79168467))
-    r2 = loop.run_until_complete(rand_monthly_ranking(2))
-    print(r2)
+    res = loop.run_until_complete(get_illust_data(86776235))
+    r2 = loop.run_until_complete(fetch_json('https://www.pixiv.net/ajax/illust/82594977/pages'))
+    print(res)
