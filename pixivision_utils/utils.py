@@ -58,7 +58,7 @@ class Pixivision(object):
         try:
             __bs = BeautifulSoup(__html, 'lxml')
         except AttributeError:
-            return {'error': True}
+            return {'error': True, 'body': {}}
         __res = {'error': False, 'body': {'illustration': []}}
         __all_illustration_card = __bs.find_all(name='li', attrs={'class': 'article-card-container'})
         for item in __all_illustration_card:
@@ -82,7 +82,7 @@ class Pixivision(object):
         try:
             __bs = BeautifulSoup(__html, 'lxml')
         except AttributeError:
-            return {'error': True}
+            return {'error': True, 'body': {}}
         __res = {'error': False, 'body': {'article': {}}}
         article_main = __bs.find(name='div', attrs={'class': '_article-main'})
         article_title = article_main.find(name='h1', attrs={'class': 'am__title'}).get_text(strip=True)
@@ -101,7 +101,7 @@ class Pixivision(object):
                 image_url = item.find(name='img', attrs={'class': 'am__work__illust'}).attrs['src']
                 illusts_list.append({'illusts_id': pid, 'illusts_url': url, 'illusts_image': image_url})
             except Exception as e:
-                print(f'Pixivision get_article_info WARNING: illusts_list class error: {e}')
+                logger.warning(f'Pixivision get_article_info WARNING: illusts_list class error: {repr(e)}')
                 continue
         __res['body']['article']['article_title'] = article_title
         __res['body']['article']['article_description'] = article_description

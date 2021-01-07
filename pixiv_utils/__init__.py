@@ -24,8 +24,7 @@ async def pixiv_illust(request: Request):
         try:
             illust_data = await get_illust_data(illust_id=illust_id)
             if not illust_data.get('error'):
-                _res = illust_data.get('body')
-                response = json_response(data=_res, status=200)
+                response = json_response(data=illust_data, status=200)
                 return response
             else:
                 response = json_response(data={'error': True, 'body': 'Can not get illust info'}, status=500)
@@ -70,7 +69,7 @@ async def pixiv_illust_withb64(request: Request):
                     url = _res.get('regular_url')
                     image_b64 = await pic_2_base64(url=url)
                     _res.update(pic_b64=image_b64)
-                response = json_response(data=_res, status=200)
+                response = json_response(data={'error': False, 'body': _res}, status=200)
                 return response
             else:
                 response = json_response(data={'error': True, 'body': 'Can not get illust info'}, status=500)

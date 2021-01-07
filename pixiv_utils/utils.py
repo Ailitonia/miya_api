@@ -97,6 +97,7 @@ async def get_illust_data(illust_id: [str, int]) -> dict:
         __res = {'error': False, 'body': __resDict}
     except Exception as e:
         __res = {'error': True, 'body': {'errinfo': repr(e)}}
+        logger.error(f'{__name__}: Failed too get_illust_data: {repr(e)}')
     return __res
 
 
